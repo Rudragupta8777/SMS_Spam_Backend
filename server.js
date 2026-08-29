@@ -333,8 +333,13 @@ app.post('/api/model/publish', requirePublishKey, async (req, res) => {
     return res.status(400).json({ error: 'threshold must be between 0 and 1' });
   }
   if (!featureContract || typeof featureContract.numBuckets !== 'number' ||
-      typeof featureContract.maxFeatures !== 'number') {
-    return res.status(400).json({ error: 'featureContract{numBuckets,maxFeatures} is required' });
+      typeof featureContract.maxFeatures !== 'number' ||
+      typeof featureContract.featureVersion !== 'number') {
+    // featureVersion catches a SEMANTIC tokenizer change (e.g. digit masking) that numBuckets/
+    // maxFeatures can't see, because the vector shape doesn't change - only what each id means.
+    return res.status(400).json({
+      error: 'featureContract{numBuckets,maxFeatures,featureVersion} is required'
+    });
   }
 
   try {
